@@ -1,0 +1,211 @@
+#include <iostream>
+
+#include <windows.h>
+
+#include <locale.h>
+
+#include <string.h>
+
+HINSTANCE hLib;
+void (*MAXIMENKO)(char* a, int* b, int c);
+
+int main(int argc, char* argv[]) {
+
+	hLib = LoadLibrary((LPCSTR)"DLL.dll");
+	if (hLib == NULL) {
+		printf("Cannot load library");
+		exit(-1);
+	}
+	MAXIMENKO = (void(*)(char*, int*, int))GetProcAddress(hLib, "MAXIMENKO");
+	if (MAXIMENKO == NULL) {
+		printf("MAXIMENKO function not found");
+		exit(-2);
+	}
+
+	setlocale(LC_ALL, "Ru");
+
+	HANDLE HandleInput, HandleOutput;
+
+	DWORD TextLen;
+
+	char FileText[256];
+
+	int NumberOfReplacement = 0;
+
+	const char* error = { "-1" };
+
+	//Переменные для генерации имени файла с другим расширением
+
+	int CharIndex;
+
+	int IndexFileName = 0;
+
+	int LenFileName; //длина имени файла без расширения
+
+	char OutputFileExtension[] = ".docx";
+
+	int CheckDot = 0;
+
+	char FileName[40];
+
+	if (argc == 2) {
+
+		//имя выходного файла
+
+		char* OutputFile = argv[1];
+
+		int ff = strlen(OutputFile);
+
+		for (int j = 0; j < ff; j++) {
+
+			if (int(OutputFile[j]) == 46) {
+
+				CheckDot = 1;
+
+				LenFileName = j;
+
+			}
+
+			if (true) {
+
+				CharIndex = int(OutputFile);
+
+				FileName[IndexFileName] = char(OutputFile[j]);
+
+				IndexFileName++;
+
+			}
+
+		}
+
+		printf("Имя выходного файла: ");
+
+		for (int j = 0; j < LenFileName; j++) {
+
+			printf("%c", FileName[j]);
+
+		}
+
+		for (size_t i = 0; i <= strlen(OutputFileExtension); i++) {
+
+			FileName[LenFileName + i] = char(OutputFileExtension[i]);
+
+			printf("%c", OutputFileExtension[i]);
+
+		}
+
+		//длина выходного файла
+
+		int LenOutputFileName = strlen(OutputFileExtension) + LenFileName;
+
+		printf("\n Имя входного файла: %s", argv[1]);
+
+		HandleInput = CreateFile(argv[1], GENERIC_READ, 0, NULL, OPEN_EXISTING, 0, NULL); //lpFileName: [in] Указатель на строку, содержащую имя объекта для создания или открытия (имя файла, путь к файлу, имя канала и пр.)
+
+		if (HandleInput != INVALID_HANDLE_VALUE) {
+
+			printf(" Файл открыт для чтения.\n");
+
+			if (ReadFile(HandleInput, FileText, 256, &TextLen, NULL)) {
+
+				CloseHandle(HandleInput);
+
+				printf("Файл прочитан, содержимое файла:\n"); //вывод содержимого файла
+
+				for (DWORD i = 0; i < TextLen; i++) {
+
+					printf("%c", FileText[i]);
+
+				}
+
+			
+
+				MAXIMENKO(FileText, &NumberOfReplacement, TextLen);
+					
+
+
+				printf("\n\nИзмененный текст, который будет записан в выходной файл.\n");
+
+				for (DWORD i = 0; i < TextLen; i++) { //вывод измененной строки
+
+					printf("%c", FileText[i]);
+
+				}
+
+				HandleOutput = CreateFile(FileName, GENERIC_WRITE, 0, NULL, CREATE_ALWAYS, 0, NULL); // вывод изменненого текста и всего остального
+
+				if (HandleOutput != INVALID_HANDLE_VALUE) {
+
+					if (!WriteFile(HandleOutput, FileText, TextLen, &TextLen, NULL)) {
+
+						printf("Ошибка записи в файл. Ошибка: %x\n", GetLastError());
+
+					}
+
+					char NumberOfReplacementText[] = "\nNumber of Replacement: "; // вывод строки о заменах
+
+					DWORD Text = DWORD(strlen(NumberOfReplacementText));
+
+					if (!WriteFile(HandleOutput, NumberOfReplacementText, Text, &Text, NULL)) {
+
+						printf("Ошибка записи в файл. Ошибка: %x\n", GetLastError());
+
+					}
+
+					char str[5]; //вывод количества замен
+
+					sprintf_s(str, "%d", NumberOfReplacement);
+
+					Text = DWORD(strlen(str));
+
+					printf("\nNumber of Replacement: %s", str);
+
+					if (!WriteFile(HandleOutput, str, Text, &Text, NULL)) {
+
+						printf("Ошибка записи в файл. Ошибка: %x\n", GetLastError());
+
+					}
+
+					printf("\n\nДанные успешно записаны в файл.");
+
+				}
+
+				else {
+
+					printf("\nОшибка создания файла. Ошибка: %x\n", GetLastError());
+
+				}
+
+			}
+
+			else {
+
+				printf("Ошибка чтения файла. Ошибка: %x\n", GetLastError());
+
+			}
+
+		}
+
+		else {
+
+			CloseHandle(HandleInput);
+
+			printf("Невозможно открыть файл. Ошибка: %x\n", GetLastError());
+
+			HandleOutput = CreateFile(FileName, GENERIC_WRITE, 0, NULL, CREATE_ALWAYS, 0, NULL);
+
+			WriteFile(HandleOutput, error, 2, &TextLen, NULL);
+
+			CloseHandle(HandleInput);
+
+		}
+
+	}
+
+	else {
+
+		printf("Отстутсвуют входные параметры.");
+
+	}
+
+}
