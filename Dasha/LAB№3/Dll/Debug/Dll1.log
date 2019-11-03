@@ -1,0 +1,7 @@
+﻿  pch.cpp
+  dllmain.cpp
+  func.cpp
+  Создание кода...
+Source.def(2): warning LNK4017: оператор DESCRIPTION не поддерживается на конечной платформе; пропущен
+     Создается библиотека C:\Users\maxim_000\source\repos\LAB№3\Dll\Debug\Dll1.lib и объект C:\Users\maxim_000\source\repos\LAB№3\Dll\Debug\Dll1.exp
+  Dll1.vcxproj -> C:\Users\maxim_000\source\repos\LAB№3\Dll\Debug\Dll1.dll
