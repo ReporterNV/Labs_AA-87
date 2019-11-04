@@ -1,0 +1,4 @@
+LIBRARY     Dll1
+DESCRIPTION "DLL-library Dll1"
+EXPORTS
+Process
