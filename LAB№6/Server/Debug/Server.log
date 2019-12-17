@@ -1,0 +1,4 @@
+﻿  Source.cpp
+C:\Users\maxim_000\source\repos\LAB№6\Server\Source.cpp(42,8): warning C4101:  hdl: неиспользованная локальная переменная
+C:\Users\maxim_000\source\repos\LAB№6\Server\Source.cpp(41,7): warning C4101:  str: неиспользованная локальная переменная
+  Server.vcxproj -> C:\Users\maxim_000\source\repos\LAB№6\Server\Debug\Server.exe
