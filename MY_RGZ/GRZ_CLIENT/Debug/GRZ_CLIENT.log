@@ -1,0 +1,3 @@
+﻿  Source.cpp
+C:\Users\maxim_000\source\repos\GRZ_CLIENT\Source.cpp(45,73): warning C4390: ";": обнаружен пустой контролируемый оператор; это правильно?
+  GRZ_CLIENT.vcxproj -> C:\Users\maxim_000\source\repos\GRZ_CLIENT\Debug\GRZ_CLIENT.exe

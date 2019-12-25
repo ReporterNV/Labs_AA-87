@@ -1,0 +1,14 @@
+﻿  Source.cpp
+C:\Users\maxim_000\source\repos\RGZ\Source.cpp(44,1): warning C4326: возвращаемый тип "main" должен быть "int", а не "void"
+  Source1.cpp
+C:\Users\maxim_000\source\repos\RGZ\Source1.cpp(32,8): warning C4101: dwRetCode: неиспользованная локальная переменная
+C:\Users\maxim_000\source\repos\RGZ\Source1.cpp(33,25): warning C4101: tea: неиспользованная локальная переменная
+C:\Users\maxim_000\source\repos\RGZ\Source1.cpp(35,8): warning C4101: hdl: неиспользованная локальная переменная
+C:\Users\maxim_000\source\repos\RGZ\Source1.cpp(33,16): warning C4101: buf: неиспользованная локальная переменная
+C:\Users\maxim_000\source\repos\RGZ\Source1.cpp(37,20): warning C4101: j: неиспользованная локальная переменная
+C:\Users\maxim_000\source\repos\RGZ\Source1.cpp(35,15): warning C4101: hdw: неиспользованная локальная переменная
+C:\Users\maxim_000\source\repos\RGZ\Source1.cpp(104,8): warning C4101: res: неиспользованная локальная переменная
+C:\Users\maxim_000\source\repos\RGZ\Source1.cpp(105,22): warning C4101: sa: неиспользованная локальная переменная
+C:\Users\maxim_000\source\repos\RGZ\Source1.cpp(106,22): warning C4101: sd: неиспользованная локальная переменная
+  Создание кода...
+  RGZ.vcxproj -> C:\Users\maxim_000\source\repos\RGZ\Debug\RGZ.exe
