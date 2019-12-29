@@ -1,0 +1,129 @@
+#define _CRT_SECURE_NO_WARNINGS
+#include <windows.h>
+#include <tchar.h>
+#include <stdio.h>
+#include <stdlib.h>
+#include <time.h>
+
+#define SERVICE_NAME TEXT("My First Service")
+
+
+SERVICE_STATUS serviceStatus;
+SERVICE_STATUS_HANDLE serviceStatusHandle = 0;
+
+HANDLE stopServiceEvent = 0;
+
+void TimeToFile(const char* fname)
+{
+    FILE* f = fopen(fname, "wb");
+
+    if (f == NULL)
+    {
+        return;
+    }
+
+    char dtime[20];
+    time_t now;
+    struct tm* ptr;
+
+    while (1)
+    {
+        now = time(NULL);
+        ptr = localtime(&now);
+        strftime(dtime, sizeof(dtime) - 1, "%d.%m.%y %H:%M:%S", ptr);
+
+        fseek(f, 0, SEEK_SET);
+
+        fprintf(f, "%s", dtime);
+
+        Sleep(1000);
+    }
+}
+void WINAPI ServiceControlHandler(DWORD controlCode)
+{
+    switch (controlCode)
+    {
+    case SERVICE_CONTROL_INTERROGATE:
+        break;
+
+    case SERVICE_CONTROL_SHUTDOWN:
+    case SERVICE_CONTROL_STOP:
+        serviceStatus.dwCurrentState = SERVICE_STOP_PENDING;
+        SetServiceStatus(serviceStatusHandle, &serviceStatus);
+
+        SetEvent(stopServiceEvent);
+        return;
+
+    case SERVICE_CONTROL_PAUSE:
+        break;
+
+    case SERVICE_CONTROL_CONTINUE:
+        break;
+
+    default:
+        if (controlCode >= 128 && controlCode <= 255)
+        {
+            break;
+        }
+        else
+        {
+            break;
+        }
+    }
+
+    SetServiceStatus(serviceStatusHandle, &serviceStatus);
+}
+
+void WINAPI ServiceMain(DWORD argc, TCHAR* argv[])
+{
+
+    serviceStatus.dwServiceType = SERVICE_WIN32;
+    serviceStatus.dwCurrentState = SERVICE_STOPPED;
+    serviceStatus.dwControlsAccepted = 0;
+    serviceStatus.dwWin32ExitCode = NO_ERROR;
+    serviceStatus.dwServiceSpecificExitCode = NO_ERROR;
+    serviceStatus.dwCheckPoint = 0;
+    serviceStatus.dwWaitHint = 0;
+
+    serviceStatusHandle = RegisterServiceCtrlHandler(SERVICE_NAME, ServiceControlHandler);
+
+    if (!serviceStatusHandle)
+    {
+        return;
+    }
+    serviceStatus.dwCurrentState = SERVICE_START_PENDING;
+    SetServiceStatus(serviceStatusHandle, &serviceStatus);
+
+    stopServiceEvent = CreateEvent(0, FALSE, FALSE, 0);
+
+    serviceStatus.dwControlsAccepted |= (SERVICE_ACCEPT_STOP | SERVICE_ACCEPT_SHUTDOWN);
+    serviceStatus.dwCurrentState = SERVICE_RUNNING;
+    SetServiceStatus(serviceStatusHandle, &serviceStatus);
+
+    CreateThread(0, 0, (LPTHREAD_START_ROUTINE)TimeToFile, (LPVOID)("c:/time.txt"), 0, 0);
+    WaitForSingleObject(stopServiceEvent, INFINITE);
+
+    serviceStatus.dwCurrentState = SERVICE_STOP_PENDING;
+    SetServiceStatus(serviceStatusHandle, &serviceStatus);
+
+    CloseHandle(stopServiceEvent);
+    stopServiceEvent = 0;
+
+    serviceStatus.dwControlsAccepted &= ~(SERVICE_ACCEPT_STOP | SERVICE_ACCEPT_SHUTDOWN);
+    serviceStatus.dwCurrentState = SERVICE_STOPPED;
+    SetServiceStatus(serviceStatusHandle, &serviceStatus);
+}
+
+
+int main(int argc, char** argv)
+{
+    SERVICE_TABLE_ENTRY serviceTable[] =
+    {
+       {(LPSTR)SERVICE_NAME, ServiceMain},
+       {0, 0}
+    };
+
+    StartServiceCtrlDispatcher(serviceTable);
+
+    return 0;
+}
