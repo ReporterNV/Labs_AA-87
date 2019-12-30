@@ -16,6 +16,25 @@ SERVICE_STATUS serviceStatus;
 SERVICE_STATUS_HANDLE serviceStatusHandle = 0;
 HANDLE stopServiceEvent = 0;
 
+int addLogMessage(const char* text)
+{
+    DWORD res, Sz;
+    HANDLE hFile;
+    char buf[256];
+    hFile = CreateFile("C:\\logfile.log", GENERIC_WRITE, 0, NULL, OPEN_ALWAYS, FILE_FLAG_WRITE_THROUGH, NULL);
+    if (!hFile) return (-1);
+    else
+    {
+        GetFileSize(hFile, &Sz);
+        SetFilePointer(hFile, 0, NULL, FILE_END);
+        sprintf(buf, "%s\r\n", text);
+        WriteFile(hFile, buf, strlen(buf), &res, NULL);
+        CloseHandle(hFile);
+        return (int)res;
+    }
+}
+
+
 char* outname(char* inname) {
     char* a = inname;
     if ((a = strrchr(inname, '.')) == NULL)
@@ -29,6 +48,7 @@ char* outname(char* inname) {
 
 void TTL(){
 
+addLogMessage("Wait for a client\n");
 hLib = LoadLibrary((LPCSTR)"Dll1.dll");
 if (hLib == NULL) {
 	printf("Cannot load library");
@@ -49,7 +69,7 @@ DWORD  cbMsgNumber;
 HANDLE hMailslot1 = 0;
 HANDLE hMailslot2 = 0;
 
-LPSTR  lpszReadMailslotName = (LPSTR)"\\\\.\\mailslot\\$Channel1$";
+LPSTR  lpszReadMailslotName  = (LPSTR)"\\\\.\\mailslot\\$Channel1$";
 LPSTR  lpszWriteMailslotName = (LPSTR)"\\\\.\\mailslot\\$Channel2$";
 
 char   szBuf[512];
@@ -60,7 +80,15 @@ char message[80] = { 0 };
 
 printf("Mailslot server demo\n");
 
-hMailslot1 = CreateMailslot(lpszReadMailslotName, 0, MAILSLOT_WAIT_FOREVER, NULL);
+SECURITY_DESCRIPTOR sd;
+InitializeSecurityDescriptor(&sd, SECURITY_DESCRIPTOR_REVISION);
+SetSecurityDescriptorDacl(&sd, true, NULL, false);
+
+SECURITY_ATTRIBUTES sa;
+sa.lpSecurityDescriptor = &sd;
+sa.bInheritHandle = true;
+
+hMailslot1 = CreateMailslot(lpszReadMailslotName, 0, MAILSLOT_WAIT_FOREVER, &sa);
 if (hMailslot1 == INVALID_HANDLE_VALUE) {
 	fprintf(stdout, "CreateMailslot: Error %ld\n",
 		GetLastError());
@@ -122,6 +150,8 @@ while (1) {
 					}
 				}
 				CloseHandle(file);
+                sprintf(message,"End with the file: %s\n", szBuf);
+                addLogMessage(message);
 				fprintf(stderr, "\n\n");
 			}
 		}
@@ -142,33 +172,6 @@ CloseHandle(hMailslot1);
 CloseHandle(hMailslot2);
 }
 
-
-void TimeToFile(const char* fname)
-{
-    FILE* f = fopen(fname, "wb");
-
-    if (f == NULL)
-    {
-        return;
-    }
-
-    char dtime[20];
-    time_t now;
-    struct tm* ptr;
-
-    while (1)
-    {
-        now = time(NULL);
-        ptr = localtime(&now);
-        strftime(dtime, sizeof(dtime) - 1, "%d.%m.%y %H:%M:%S", ptr);
-
-        fseek(f, 0, SEEK_SET);
-
-        fprintf(f, "%s", dtime);
-
-        Sleep(1000);
-    }
-}
 void WINAPI ServiceControlHandler(DWORD controlCode)
 {
     switch (controlCode)
@@ -217,6 +220,8 @@ void WINAPI ServiceMain(DWORD argc, TCHAR* argv[])
 
     serviceStatusHandle = RegisterServiceCtrlHandler(SERVICE_NAME, ServiceControlHandler);
 
+    addLogMessage("Start SCH\n");
+
     if (!serviceStatusHandle)
     {
         return;
@@ -238,10 +243,12 @@ void WINAPI ServiceMain(DWORD argc, TCHAR* argv[])
 
     CloseHandle(stopServiceEvent);
     stopServiceEvent = 0;
-
+    addLogMessage("Service stop working\n");
     serviceStatus.dwControlsAccepted &= ~(SERVICE_ACCEPT_STOP | SERVICE_ACCEPT_SHUTDOWN);
     serviceStatus.dwCurrentState = SERVICE_STOPPED;
     SetServiceStatus(serviceStatusHandle, &serviceStatus);
+    addLogMessage("\nEND\n");
+    addLogMessage("\n_______________________________\n");
 }
 
 
@@ -252,7 +259,7 @@ int main(int argc, char** argv)
        {(LPSTR)SERVICE_NAME, ServiceMain},
        {0, 0}
     };
-
+    addLogMessage("Service Work!\n");
     StartServiceCtrlDispatcher(serviceTable);
 
     return 0;
